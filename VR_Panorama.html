@@ -76,22 +76,22 @@
       -ms-user-select: all;
     }
 
-    /* Base styles for the panel when not collapsed */
-    #ui-panel {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: rgba(17, 25, 40, 0.75);
-        backdrop-filter: blur(12px);
-        border: 0px solid rgba(255, 255, 255, 0.125);
-        border-radius: 16px;
-        z-index: 1000;
-        transform: scale(1);
-        transform-origin: top right;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-        padding: 10px;
-        transition: all 0.3s ease-in-out;
-    }
+   /* Default styling for all screens */
+#ui-panel {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(17, 25, 40, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    z-index: 999;
+    transform: scale(1);
+    transform-origin: top right;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    padding: 15px;
+}
+
 
     #ui-panel #ui-content {
         transition: all 0.3s ease-in-out;
@@ -105,31 +105,42 @@
         pointer-events: none;
     }
 
-    #ui-panel.collapsed {
-        padding: 0;
-        background: none;
-        box-shadow: none;
+   #ui-panel.collapsed {
+        background: transparent !important;
+        backdrop-filter: none !important;
+        border: none !important;
+        box-shadow: none !important;
     }
 
-    #toggle-ui {
-        position: absolute;
-        top: -45px;
-        right: 0;
-        padding: 10px 20px;
-        background: #2196F3;
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-family: system-ui, sans-serif;
-        font-weight: 400;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        z-index: 1;
-    }
+/* Add this new section */
+#ui-panel.collapsed #toggle-ui {
+    transform: rotate(-90deg);
+    border-radius: 8px;
+    backdrop-filter: none !important;
+    background: #2196F3 !important;
+}
+
+   #toggle-ui {
+    position: absolute;
+    top: -45px;
+    right: 0;
+    padding: 10px 20px;
+    background: #2196F3;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: system-ui, sans-serif;
+    font-weight: 400;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    z-index: 1000; /* Increased z-index */
+    margin-bottom: 10px; /* Added margin */
+}
+
 
     #ui-panel.collapsed #toggle-ui {
         transform: rotate(-90deg);
@@ -189,14 +200,15 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
-    /* Mobile styles */
-    @media (max-width: 768px) {
-        #ui-panel {
-            top: 60px !important;
-            right: 10px !important;
-            width: 240px;
-            /* Removed transform: none */
-        }
+  /* Mobile-specific overrides */
+@media (max-width: 768px) {
+    #ui-panel {
+        top: 60px !important;
+        right: 10px !important;
+        width: 240px;
+        padding: 12px;
+        background: rgba(17, 25, 40, 0.95);
+    }
 
         #ui-content {
             padding: 8px !important;
