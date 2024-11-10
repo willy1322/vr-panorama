@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>VR Panorama</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="src/styles/main.css">
+</head>
+<body>
+    <div id="container"></div>
+    
+    <div id="loading-screen">
+        <div class="loading-text">Loading Experience... 0%</div>
+        <div class="loader">
+            <div class="progress-bar"></div>
+        </div>
+    </div>
+
+    <div id="ui-panel" class="ui-controls">
+        <button id="toggle-ui">
+            <span>▼ Controls</span>
+        </button>
+        
+        <div id="ui-content">
+            <h3>Add 3D Object</h3>
+            
+            <select id="object-type">
+                <option value="cube">Cube</option>
+                <option value="sphere">Sphere</option>
+                <option value="custom">Custom GLB Model</option>
+                <option value="fbx">FBX Model</option>
+            </select>
+
+            <input type="file" id="model-file" accept=".glb,.gltf" style="display: none;">
+            <div id="file-name" style="display: none;"></div>
+
+            <div class="input-group">
+                <div class="input-label">Model URL</div>
+                <div class="input-with-button">
+                    <input type="text" id="model-url" placeholder="Enter GLB URL">
+                    <button id="paste-url">Paste</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="input-label">Position</div>
+                <div class="position-inputs">
+                    <input type="tel" id="pos-x" value="0" inputmode="numeric">
+                    <input type="tel" id="pos-y" value="0" inputmode="numeric">
+                    <input type="tel" id="pos-z" value="-3" inputmode="numeric">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="input-label">Scale</div>
+                <input type="range" id="scale" min="0.1" max="5" step="0.1" value="1">
+                <div id="scale-value">1.0</div>
+            </div>
+
+            <div class="control-group">
+                <div class="input-label">Rotation (Y)</div>
+                <input type="range" id="rotation" min="0" max="360" step="1" value="0">
+                <div id="rotation-value">0°</div>
+            </div>
+
+            <div class="button-group">
+                <button id="add-object" class="action-button primary">Add Object</button>
+                <button id="clear-objects" class="action-button danger">Clear All Objects</button>
+                <button id="toggle-sphere" class="action-button info">Toggle Sphere Visibility</button>
+                <button id="save-positions" class="action-button success">Save Video Positions</button>
+                <button id="toggle-audio" class="action-button warning">Toggle Audio</button>
+                <button id="toggle-gyroscope" class="action-button secondary">Toggle Gyroscope</button>
+            </div>
+        </div>
+    </div>
+
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/examples/jsm/controls/OrbitControls.js": "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js",
+            "three/examples/jsm/webxr/VRButton.js": "https://unpkg.com/three@0.160.0/examples/jsm/webxr/VRButton.js",
+            "three/examples/jsm/webxr/XRControllerModelFactory.js": "https://unpkg.com/three@0.160.0/examples/jsm/webxr/XRControllerModelFactory.js",
+            "three/examples/jsm/loaders/GLTFLoader.js": "https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js",
+            "three/examples/jsm/loaders/FBXLoader.js": "https://unpkg.com/three@0.160.0/examples/jsm/loaders/FBXLoader.js"
+        }
+    }
+    </script>
+    <script type="module" src="src/js/main.js"></script>
+</body>
+</html>
