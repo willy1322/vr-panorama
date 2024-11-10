@@ -10,7 +10,7 @@
 
   
   
-  <style>
+<style>
     body {
       margin: 0;
     }
@@ -33,8 +33,6 @@
       z-index: 9999;
       transition: opacity 0.5s;
     }
-
-
 
     #loading-screen.fade-out {
       opacity: 0;
@@ -62,35 +60,13 @@
       margin-bottom: 20px;
     }
 
-    /* Add these new styles */
+    /* UI Controls */
     .ui-controls {
       user-select: none;
       -webkit-user-select: none;
       -moz-user-select: none;
       -ms-user-select: none;
     }
-    
-    #ui-panel {
-      transition: transform 0.3s ease-in-out;
-    transform-origin: top right;
-}
-
-#ui-panel.collapsed #ui-content {
-    display: none;
-}
-
-#ui-panel.collapsed {
-    padding: 0;
-    background: none;
-}
-
-#toggle-ui {
-    transition: transform 0.3s ease-in-out;
-}
-
-#ui-panel.collapsed #toggle-ui {
-    transform: rotate(-90deg);
-}
     
     .ui-controls input,
     .ui-controls select {
@@ -100,264 +76,254 @@
       -ms-user-select: all;
     }
 
-#toggle-ui {
-    position: absolute;
-    top: -45px;
-    right: 0;
-    padding: 10px 20px;
-    background: #2196F3;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-family: system-ui, sans-serif;
-    font-weight: 400;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    z-index: 1;  /* Add this */
-}
+    /* Base styles for the panel when not collapsed */
+    #ui-panel {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(17, 25, 40, 0.75);
+        backdrop-filter: blur(12px);
+        border: 0px solid rgba(255, 255, 255, 0.125);
+        border-radius: 16px;
+        z-index: 1000;
+        transform: scale(1);
+        transform-origin: top right;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        padding: 10px;
+        transition: all 0.3s ease-in-out;
+    }
 
-#ui-panel {
-  transition: transform 0.3s ease-in-out;
-  transform-origin: top right;
-  position: fixed;
-  top: 60px !important;
-  overflow: visible !important; /* To ensure toggle button is visible */
-  max-height: calc(100vh - 80px); /* Prevent overflow */
-  overflow-y: auto;
-}
+    #ui-panel #ui-content {
+        transition: all 0.3s ease-in-out;
+        opacity: 1;
+        transform: scale(1);
+    }
 
-#ui-content {
-  padding: 15px;
-  background: rgba(0, 0, 0, 0.7);
-  border-radius: 10px;
-}
+    #ui-panel.collapsed #ui-content {
+        opacity: 0;
+        transform: scale(0.95);
+        pointer-events: none;
+    }
 
-@media (max-width: 768px) {
- #ui-panel {
-    top: 60px !important;
-    right: 10px !important;
-    width: 240px;
-    /* Remove the transform: none; line */
-  }
+    #ui-panel.collapsed {
+        padding: 0;
+        background: none;
+        box-shadow: none;
+    }
 
-  #ui-content {
-    padding: 8px !important;
-  }
+    #toggle-ui {
+        position: absolute;
+        top: -45px;
+        right: 0;
+        padding: 10px 20px;
+        background: #2196F3;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: system-ui, sans-serif;
+        font-weight: 400;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        z-index: 1;
+    }
 
-  /* Super compact header */
-  #ui-content h3 {
-    font-size: 13px !important;
-    margin: 0 0 6px 0 !important;
-    padding: 0 !important;
-  }
+    #ui-panel.collapsed #toggle-ui {
+        transform: rotate(-90deg);
+    }
 
-  /* Compact select dropdown */
-  select {
-    padding: 4px 6px !important;
-    font-size: 12px !important;
-    height: 26px !important;
-    margin-bottom: 6px !important;
-    line-height: 1 !important;
-  }
+    /* Input styles */
+    input[type="tel"]:hover {
+        border-color: rgba(255, 255, 255, 0.5);
+    }
 
-  /* Model URL section */
-  input[type="text"] {
-    padding: 4px 6px !important;
-    font-size: 12px !important;
-    height: 26px !important;
-  }
+    input[type="tel"]:focus {
+        outline: none;
+        border-color: rgba(255, 255, 255, 0.7);
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+    }
 
-  #paste-url {
-    padding: 4px 8px !important;
-    height: 26px !important;
-    font-size: 11px !important;
-    min-width: 50px !important;
-  }
+    input[type="tel"]::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
 
-  /* Position inputs */
-  input[type="tel"] {
-    padding: 4px 6px !important;
-    font-size: 12px !important;
-    height: 26px !important;
-    min-height: unset !important;
-  }
-
-  /* Labels */
-  .section-label, div[style*="color: white"] {
-    font-size: 11px !important;
-    margin-bottom: 2px !important;
-    line-height: 1 !important;
-  }
-
-  /* Position X,Y,Z labels */
-  span[style*="color: rgb"] {
-    font-size: 10px !important;
-    margin-bottom: 1px !important;
-  }
-
-  /* Slider containers */
-  div[style*="margin-bottom: 16px"],
-  div[style*="margin-bottom: 24px"],
-  div[style*="margin-bottom: 8px"] {
-    margin-bottom: 6px !important;
-  }
-
-  /* Sliders */
-  input[type="range"] {
-    margin: 2px 0 !important;
-    height: 4px !important;
-  }
-
-  input[type="range"]::-webkit-slider-thumb {
-    width: 14px !important;
-    height: 14px !important;
-    margin-top: -5px !important;
-  }
-  
-  #ui-panel.ui-controls.collapsed {
-    background: none !important;
-    backdrop-filter: none !important;
-    border: none !important;
-    box-shadow: none !important;
-    transform: none !important;
-    padding: 0 !important;
-}
-
-/* Base styles for the panel when not collapsed */
-#ui-panel {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: rgba(17, 25, 40, 0.75);
-    backdrop-filter: blur(12px);
-    border: 0px solid rgba(255, 255, 255, 0.125);
-    border-radius: 16px;
-    z-index: 1000;
-    transform: scale(1);
-    transform-origin: top right;
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    padding: 10px;
-}
-
-  input[type="range"]::-moz-range-thumb {
-    width: 14px !important;
-    height: 14px !important;
-  }
-
-  /* Slider values */
-  #scale-value, #rotation-value {
-    font-size: 11px !important;
-    margin-top: 2px !important;
-  }
-
-  /* Action buttons */
-  button {
-    padding: 6px !important;
-    font-size: 12px !important;
-    height: 28px !important;
-    margin-bottom: 4px !important;
-    line-height: 1 !important;
-    min-height: unset !important;
-  }
-
-  /* Button container */
-  div[style*="flex-direction: column"] {
-    gap: 4px !important;
-  }
-
-  /* Toggle button */
-  #toggle-ui {
-    top: -28px !important;
-    height: 28px !important;
-    padding: 4px 10px !important;
-    font-size: 11px !important;
-    min-height: unset !important;
-  }
-
-  /* Collapsed state adjustment */
- #ui-panel.collapsed {
-    padding: 0;
-    background: none;
-    box-shadow: none;  /* Add this */
-}
-
-
-
-/* Additional style fixes */
-input, button, select {
-    margin: 2px 0 !important;
-    min-height: unset !important;
-}
-
-div[style*="gap: 8px"] {
-    gap: 4px !important;
-}
-
-/* Remove any default margins/padding that might add height */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-/* Ensure container spacing is minimal */
-#ui-panel > div {
-    margin-bottom: 6px !important;
-}
-
-/* Make all containers more compact */
-div[style*="padding: 24px"] {
-    padding: 8px !important;
-}
-
-#ui-panel.collapsed #toggle-ui {
-    transform: rotate(-90deg);
-}
+    /* Range input styles */
+    input[type="range"] {
+        background: linear-gradient(to right, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5));
+    }
     
-    /* For better mobile touch targets */
-    select, input, button {
-        min-height: 44px;
-        font-size: 16px;
+    input[type="range"]::-webkit-slider-runnable-track {
+        height: 6px;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 3px;
+    }
+    
+    input[type="range"]::-moz-range-track {
+        height: 6px;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 3px;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        background: white;
+        border-radius: 50%;
+        cursor: pointer;
+        margin-top: -6px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    input[type="range"]::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        background: white;
+        border-radius: 50%;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Mobile styles */
+    @media (max-width: 768px) {
+        #ui-panel {
+            top: 60px !important;
+            right: 10px !important;
+            width: 240px;
+            /* Removed transform: none */
+        }
+
+        #ui-content {
+            padding: 8px !important;
+        }
+
+        #ui-content h3 {
+            font-size: 13px !important;
+            margin: 0 0 6px 0 !important;
+            padding: 0 !important;
+        }
+
+        select {
+            padding: 4px 6px !important;
+            font-size: 12px !important;
+            height: 26px !important;
+            margin-bottom: 6px !important;
+            line-height: 1 !important;
+        }
+
+        input[type="text"] {
+            padding: 4px 6px !important;
+            font-size: 12px !important;
+            height: 26px !important;
+        }
+
+        #paste-url {
+            padding: 4px 8px !important;
+            height: 26px !important;
+            font-size: 11px !important;
+            min-width: 50px !important;
+        }
+
+        input[type="tel"] {
+            padding: 4px 6px !important;
+            font-size: 12px !important;
+            height: 26px !important;
+            min-height: unset !important;
+        }
+
+        .section-label, div[style*="color: white"] {
+            font-size: 11px !important;
+            margin-bottom: 2px !important;
+            line-height: 1 !important;
+        }
+
+        span[style*="color: rgb"] {
+            font-size: 10px !important;
+            margin-bottom: 1px !important;
+        }
+
+        div[style*="margin-bottom: 16px"],
+        div[style*="margin-bottom: 24px"],
+        div[style*="margin-bottom: 8px"] {
+            margin-bottom: 6px !important;
+        }
+
+        input[type="range"] {
+            margin: 2px 0 !important;
+            height: 4px !important;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            width: 14px !important;
+            height: 14px !important;
+            margin-top: -5px !important;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 14px !important;
+            height: 14px !important;
+        }
+
+        #scale-value, #rotation-value {
+            font-size: 11px !important;
+            margin-top: 2px !important;
+        }
+
+        button {
+            padding: 6px !important;
+            font-size: 12px !important;
+            height: 28px !important;
+            margin-bottom: 4px !important;
+            line-height: 1 !important;
+            min-height: unset !important;
+        }
+
+        #toggle-ui {
+            top: -28px !important;
+            height: 28px !important;
+            padding: 4px 10px !important;
+            font-size: 11px !important;
+            min-height: unset !important;
+        }
+
+        input, button, select {
+            margin: 2px 0 !important;
+            min-height: unset !important;
+        }
+
+        div[style*="gap: 8px"] {
+            gap: 4px !important;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        div[style*="padding: 24px"] {
+            padding: 8px !important;
+        }
     }
 
     .loading {
         opacity: 0.5;
         pointer-events: none;
     }
-    /* Add these new styles */
-  #ui-panel.collapsed #ui-content {
-    display: none;
-}
 
-  #ui-panel.collapsed {
-    padding: 0;
-    background: none;
-  }
-
-  #toggle-ui {
-    transition: transform 0.3s ease-in-out;
-  }
-
-  #ui-panel.collapsed #toggle-ui {
-    transform: rotate(-90deg);
-    border-radius: 8px;  /* Add this */
-    background: #2196F3;  /* Add this to ensure consistent color */
-}
-
-  @media (max-width: 768px) {
-    #ui-panel {
-      max-height: 80vh;
-      overflow-y: auto;
+    select, input, button {
+        min-height: 44px;
+        font-size: 16px;
     }
-  }
-  </style>
-  
-  <!-- END STYLE SECTION -->
+</style>
 
+<!-- END STYLE SECTION -->
+  
   
   
 </head>
@@ -380,296 +346,88 @@ div[style*="padding: 24px"] {
     <!-- START OF UI PANEL HTML SECTION -->
 
    
-<div id="ui-panel" class="ui-controls" style="position: fixed; 
-    top: 20px; 
-    right: 20px; 
-    background: rgba(17, 25, 40, 0.75); 
-    backdrop-filter: blur(12px); 
-    border: 0px solid rgba(255, 255, 255, 0.125); 
-    border-radius: 16px; 
-    z-index: 1000; 
-    transform: scale(1.1); 
-    transform-origin: top right; 
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    padding: 10px;                              /* Added padding */
-    font-family: 'Poppins', sans-serif;">       
-    
-    
-    
-    <!-- Updated toggle button styling with distinctive color -->
-    <button id="toggle-ui" style="position: absolute; top: -45px; right: 0; padding: 10px 20px; background: #2196F3; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-family: system-ui, sans-serif; font-weight: 400; transition: all 0.3s ease; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-        <span style="font-size: 14px;">▼ Controls</span>
+<div id="ui-panel" class="ui-controls">
+    <button id="toggle-ui">
+        <span>▼ Controls</span>
     </button>
     
-    <!-- Content container -->
-    <div id="ui-content" style="padding: 24px 14px;"> 
-        <h3 style="margin: 0 0 20px 0; color: white; font-family: 'Inter', system-ui, sans-serif; font-weight: 600; font-size: 18px;">Add 3D Object</h3>
+    <div id="ui-content">
+        <h3>Add 3D Object</h3>
         
-        <!-- Object Selection with fixed styling -->
-        <select id="object-type" style="width: 100%; padding: 12px; background: rgba(17, 25, 40, 0.9); color: white; border: 1px solid rgba(255, 255, 255, 0.125); border-radius: 12px; margin-bottom: 16px; font-family: 'Inter', system-ui, sans-serif; cursor: pointer; transition: all 0.3s ease; -webkit-appearance: none; appearance: none; background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath d=\'M2 4 L6 8 L10 4\' stroke=\'white\' fill=\'none\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E'); background-position: right 8px center; background-repeat: no-repeat; background-size: 12px; padding-right: 28px;">
-            <option value="cube" style="background: rgba(17, 25, 40, 0.9); color: white;">Cube</option>
-            <option value="sphere" style="background: rgba(17, 25, 40, 0.9); color: white;">Sphere</option>
-            <option value="custom" style="background: rgba(17, 25, 40, 0.9); color: white;">Custom GLB Model</option>
-            <option value="fbx" style="background: rgba(17, 25, 40, 0.9); color: white;">FBX Model</option>
+        <select id="object-type">
+            <option value="cube">Cube</option>
+            <option value="sphere">Sphere</option>
+            <option value="custom">Custom GLB Model</option>
+            <option value="fbx">FBX Model</option>
         </select>
 
         <input type="file" id="model-file" accept=".glb,.gltf" style="display: none;">
         <div id="file-name" style="font-size: 14px; margin-top: 8px; color: rgba(255, 255, 255, 0.7); display: none;"></div>
 
-       <!-- Model URL Input -->
-<div style="margin-bottom: 16px;">
-    <div style="margin-bottom: 8px; color: white; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px;">Model URL</div>
-    <div style="display: flex; gap: 8px;">
-        <input type="text" id="model-url" placeholder="Enter GLB URL" 
-            style="flex: 1;                    /* Changed from flex-grow: 1 */
-                   min-width: 0;              /* Added to prevent overflow */
-                   padding: 8px 12px;         /* Adjusted padding */
-                   background: rgba(255, 255, 255, 0.05);
-                   color: white;
-                   border: 1px solid rgba(255, 255, 255, 0.125);
-                   border-radius: 12px;
-                   font-family: inherit;">
-        <button id="paste-url" 
-            style="min-width: 60px;           /* Added min-width */
-                   white-space: nowrap;       /* Prevent text wrapping */
-                   padding: 8px 12px;         /* Adjusted padding */
-                   background: rgba(255, 255, 255, 0.1);
-                   color: white;
-                   border: none;
-                   border-radius: 12px;
-                   cursor: pointer;
-                   transition: all 0.3s ease;
-                   font-family: inherit;">
-            Paste
-        </button>
-    </div>
-</div>
-
-       <!-- Position inputs with modern styling -->
-<div style="margin-bottom: 16px;">
-    <div style="margin-bottom: 8px; color: white; font-family: 'Inter', system-ui, sans-serif; font-size: 14px;">Position</div>
-    <div style="display: flex; gap: 8px;">
-        <input type="tel" id="pos-x" value="0" inputmode="numeric" 
-            style="width: 70px; 
-                   padding: 12px; 
-                   background: rgba(52, 152, 219, 0.1); 
-                   color: white; 
-                   border: 1px solid rgba(52, 152, 219, 0.3); 
-                   border-radius: 12px; 
-                   -webkit-appearance: none; 
-                   text-align: center; 
-                   font-family: 'Inter', system-ui, sans-serif;
-                   transition: all 0.3s ease;
-                   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-                   backdrop-filter: blur(4px);">
-        <input type="tel" id="pos-y" value="0" inputmode="numeric" 
-            style="width: 70px; 
-                   padding: 12px; 
-                   background: rgba(46, 204, 113, 0.1); 
-                   color: white; 
-                   border: 1px solid rgba(46, 204, 113, 0.3); 
-                   border-radius: 12px; 
-                   -webkit-appearance: none; 
-                   text-align: center; 
-                   font-family: 'Inter', system-ui, sans-serif;
-                   transition: all 0.3s ease;
-                   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-                   backdrop-filter: blur(4px);">
-        <input type="tel" id="pos-z" value="-3" inputmode="numeric" 
-            style="width: 70px; 
-                   padding: 12px; 
-                   background: rgba(155, 89, 182, 0.1); 
-                   color: white; 
-                   border: 1px solid rgba(155, 89, 182, 0.3); 
-                   border-radius: 12px; 
-                   -webkit-appearance: none; 
-                   text-align: center; 
-                   font-family: 'Inter', system-ui, sans-serif;
-                   transition: all 0.3s ease;
-                   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-                   backdrop-filter: blur(4px);">
-    </div>
-    
-</div>
-
-<style>
-/* Hover states for inputs */
-input[type="tel"]:hover {
-    border-color: rgba(255, 255, 255, 0.5);
-}
-
-/* Focus states for inputs */
-input[type="tel"]:focus {
-    outline: none;
-    border-color: rgba(255, 255, 255, 0.7);
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
-}
-
-/* Placeholder styling */
-input[type="tel"]::placeholder {
-    color: rgba(255, 255, 255, 0.5);
-}
-</style>
-
-        <!-- Scale Control with improved slider styling -->
         <div style="margin-bottom: 16px;">
-            <div style="margin-bottom: 8px; color: white; font-family: 'Inter', system-ui, sans-serif; font-size: 14px;">Scale</div>
-            <input type="range" id="scale" min="0.1" max="5" step="0.1" value="1" 
-                style="width: 100%; height: 6px; -webkit-appearance: none; appearance: none; background: rgba(255, 255, 255, 0.3); border-radius: 3px; cursor: pointer; outline: none;">
-            <style>
-                input[type="range"] {
-                    background: linear-gradient(to right, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5));
-                }
-                input[type="range"]::-webkit-slider-runnable-track {
-                    height: 6px;
-                    background: rgba(255, 255, 255, 0.5);
-                    border-radius: 3px;
-                }
-                input[type="range"]::-moz-range-track {
-                    height: 6px;
-                    background: rgba(255, 255, 255, 0.5);
-                    border-radius: 3px;
-                }
-                input[type="range"]::-webkit-slider-thumb {
-                    -webkit-appearance: none;
-                    appearance: none;
-                    width: 18px;
-                    height: 18px;
-                    background: white;
-                    border-radius: 50%;
-                    cursor: pointer;
-                    margin-top: -6px;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-                }
-                input[type="range"]::-moz-range-thumb {
-                    width: 18px;
-                    height: 18px;
-                    background: white;
-                    border-radius: 50%;
-                    cursor: pointer;
-                    border: none;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-                }
-                input[type="range"]:hover::-webkit-slider-thumb {
-                    background: #f0f0f0;
-                }
-                input[type="range"]:hover::-moz-range-thumb {
-                    background: #f0f0f0;
-                }
-            </style>
-            <div id="scale-value" style="text-align: center; color: white; margin-top: 8px; font-family: 'Inter', system-ui, sans-serif; font-size: 14px;">1.0</div>
+            <div style="margin-bottom: 8px; color: white;">Model URL</div>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="model-url" placeholder="Enter GLB URL" 
+                    style="flex: 1; min-width: 0; padding: 8px 12px; background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid rgba(255, 255, 255, 0.125); border-radius: 12px;">
+                <button id="paste-url" 
+                    style="min-width: 60px; white-space: nowrap; padding: 8px 12px; background: rgba(255, 255, 255, 0.1); color: white; border: none; border-radius: 12px; cursor: pointer;">
+                    Paste
+                </button>
+            </div>
         </div>
 
-        <!-- Rotation Control with improved slider styling -->
+        <div style="margin-bottom: 16px;">
+            <div style="margin-bottom: 8px; color: white;">Position</div>
+            <div style="display: flex; gap: 8px;">
+                <input type="tel" id="pos-x" value="0" inputmode="numeric" 
+                    style="width: 70px; padding: 12px; background: rgba(52, 152, 219, 0.1); color: white; border: 1px solid rgba(52, 152, 219, 0.3); border-radius: 12px; text-align: center;">
+                <input type="tel" id="pos-y" value="0" inputmode="numeric" 
+                    style="width: 70px; padding: 12px; background: rgba(46, 204, 113, 0.1); color: white; border: 1px solid rgba(46, 204, 113, 0.3); border-radius: 12px; text-align: center;">
+                <input type="tel" id="pos-z" value="-3" inputmode="numeric" 
+                    style="width: 70px; padding: 12px; background: rgba(155, 89, 182, 0.1); color: white; border: 1px solid rgba(155, 89, 182, 0.3); border-radius: 12px; text-align: center;">
+            </div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <div style="margin-bottom: 8px; color: white;">Scale</div>
+            <input type="range" id="scale" min="0.1" max="5" step="0.1" value="1">
+            <div id="scale-value" style="text-align: center; color: white; margin-top: 8px;">1.0</div>
+        </div>
+
         <div style="margin-bottom: 24px;">
-            <div style="margin-bottom: 8px; color: white; font-family: 'Inter', system-ui, sans-serif; font-size: 14px;">Rotation (Y)</div>
-            <input type="range" id="rotation" min="0" max="360" step="1" value="0" 
-                style="width: 100%; height: 6px; -webkit-appearance: none; appearance: none; background: rgba(255, 255, 255, 0.3); border-radius: 3px; cursor: pointer; outline: none;">
-            <div id="rotation-value" style="text-align: center; color: white; margin-top: 8px; font-family: 'Inter', system-ui, sans-serif; font-size: 14px;">0°</div>
+            <div style="margin-bottom: 8px; color: white;">Rotation (Y)</div>
+            <input type="range" id="rotation" min="0" max="360" step="1" value="0">
+            <div id="rotation-value" style="text-align: center; color: white; margin-top: 8px;">0°</div>
         </div>
 
-      <!-- Action Buttons -->
-<div style="display: flex; flex-direction: column; gap: 10px; padding: 5px;">
-    <button id="add-object" 
-        style="width: 100%; 
-               padding: 12px;
-               background: linear-gradient(135deg, #4CAF50, #2E7D32);
-               color: white; 
-               border: none;
-               border-radius: 12px;
-               cursor: pointer;
-               font-family: 'Inter', system-ui, sans-serif;
-               font-weight: 500;
-               font-size: 14px;
-               letter-spacing: 0.3px;
-               transition: all 0.3s ease;
-               box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
-        Add Object
-    </button>
-    <button id="clear-objects" 
-        style="width: 100%; 
-               padding: 12px;
-               background: linear-gradient(135deg, #f44336, #c62828);
-               color: white; 
-               border: none;
-               border-radius: 12px;
-               cursor: pointer;
-               font-family: 'Inter', system-ui, sans-serif;
-               font-weight: 500;
-               font-size: 14px;
-               letter-spacing: 0.3px;
-               transition: all 0.3s ease;
-               box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
-        Clear All Objects
-    </button>
-    <button id="toggle-sphere" 
-        style="width: 100%; 
-               padding: 12px;
-               background: linear-gradient(135deg, #2196F3, #1565C0);
-               color: white; 
-               border: none;
-               border-radius: 12px;
-               cursor: pointer;
-               font-family: 'Inter', system-ui, sans-serif;
-               font-weight: 500;
-               font-size: 14px;
-               letter-spacing: 0.3px;
-               transition: all 0.3s ease;
-               box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
-        Toggle Sphere Visibility
-    </button>
-    <button id="save-positions" 
-        style="width: 100%; 
-               padding: 12px;
-               background: linear-gradient(135deg, #9C27B0, #6A1B9A);
-               color: white; 
-               border: none;
-               border-radius: 12px;
-               cursor: pointer;
-               font-family: 'Inter', system-ui, sans-serif;
-               font-weight: 500;
-               font-size: 14px;
-               letter-spacing: 0.3px;
-               transition: all 0.3s ease;
-               box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
-        Save Video Positions
-    </button>
-    <button id="toggle-audio" 
-        style="width: 100%; 
-               padding: 12px;
-               background: linear-gradient(135deg, #FF5722, #D84315);
-               color: white; 
-               border: none;
-               border-radius: 12px;
-               cursor: pointer;
-               font-family: 'Inter', system-ui, sans-serif;
-               font-weight: 500;
-               font-size: 14px;
-               letter-spacing: 0.3px;
-               transition: all 0.3s ease;
-               box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
-  Toggle Audio
-    </button>
-    <button id="toggle-gyroscope" 
-        style="width: 100%; 
-               padding: 12px;
-               background: linear-gradient(135deg, #673AB7, #4527A0);
-               color: white; 
-               border: none;
-               border-radius: 12px;
-               cursor: pointer;
-               font-family: 'Inter', system-ui, sans-serif;
-               font-weight: 500;
-               font-size: 14px;
-               letter-spacing: 0.3px;
-               transition: all 0.3s ease;
-               box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
-        Toggle Gyroscope
-    </button>
-</div>
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 5px;">
+            <button id="add-object" 
+                style="background: linear-gradient(135deg, #4CAF50, #2E7D32);">
+                Add Object
+            </button>
+            <button id="clear-objects" 
+                style="background: linear-gradient(135deg, #f44336, #c62828);">
+                Clear All Objects
+            </button>
+            <button id="toggle-sphere" 
+                style="background: linear-gradient(135deg, #2196F3, #1565C0);">
+                Toggle Sphere Visibility
+            </button>
+            <button id="save-positions" 
+                style="background: linear-gradient(135deg, #9C27B0, #6A1B9A);">
+                Save Video Positions
+            </button>
+            <button id="toggle-audio" 
+                style="background: linear-gradient(135deg, #FF5722, #D84315);">
+                Toggle Audio
+            </button>
+            <button id="toggle-gyroscope" 
+                style="background: linear-gradient(135deg, #673AB7, #4527A0);">
+                Toggle Gyroscope
+            </button>
+        </div>
     </div>
 </div>
-
 
 <!-- END OF UI PANEL HTML SECTION -->
 
@@ -2226,7 +1984,6 @@ function render() {
 </script>
 </body>
 </html
-
 
 
 
