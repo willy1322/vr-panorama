@@ -1,0 +1,2234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>VR Panorama</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  
+   <!-- START OF STYLE SECTION -->
+
+  
+  
+  <style>
+    body {
+      margin: 0;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    #loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s;
+    }
+
+
+
+    #loading-screen.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loader {
+      width: 200px;
+      height: 4px;
+      background: #1a1a1a;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: #ffffff;
+      transition: width 0.3s ease;
+    }
+
+    .loading-text {
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      margin-bottom: 20px;
+    }
+
+    /* Add these new styles */
+    .ui-controls {
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+    
+    #ui-panel {
+    transition: transform 0.3s ease-in-out;
+    transform-origin: top right;
+}
+
+#ui-panel.collapsed #ui-content {
+    display: none;
+}
+
+#ui-panel.collapsed {
+    padding: 0;
+    background: none;
+}
+
+#toggle-ui {
+    transition: transform 0.3s ease-in-out;
+}
+
+#ui-panel.collapsed #toggle-ui {
+    transform: rotate(-90deg);
+}
+    
+    .ui-controls input,
+    .ui-controls select {
+      user-select: all;
+      -webkit-user-select: all;
+      -moz-user-select: all;
+      -ms-user-select: all;
+    }
+
+#toggle-ui {
+    position: absolute;
+    top: -45px;
+    right: 0;
+    padding: 10px 20px;
+    background: #2196F3;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: system-ui, sans-serif;
+    font-weight: 400;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    z-index: 1;  /* Add this */
+}
+
+#ui-panel {
+  transition: transform 0.3s ease-in-out;
+  transform-origin: top right;
+  position: fixed;
+  top: 60px !important;
+  overflow: visible !important; /* To ensure toggle button is visible */
+  max-height: calc(100vh - 80px); /* Prevent overflow */
+  overflow-y: auto;
+}
+
+#ui-content {
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 10px;
+}
+
+@media (max-width: 768px) {
+  #ui-panel {
+    top: 60px !important;
+    right: 10px !important;
+    width: 240px;
+    transform: none;
+  }
+
+  #ui-content {
+    padding: 8px !important;
+  }
+
+  /* Super compact header */
+  #ui-content h3 {
+    font-size: 13px !important;
+    margin: 0 0 6px 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Compact select dropdown */
+  select {
+    padding: 4px 6px !important;
+    font-size: 12px !important;
+    height: 26px !important;
+    margin-bottom: 6px !important;
+    line-height: 1 !important;
+  }
+
+  /* Model URL section */
+  input[type="text"] {
+    padding: 4px 6px !important;
+    font-size: 12px !important;
+    height: 26px !important;
+  }
+
+  #paste-url {
+    padding: 4px 8px !important;
+    height: 26px !important;
+    font-size: 11px !important;
+    min-width: 50px !important;
+  }
+
+  /* Position inputs */
+  input[type="tel"] {
+    padding: 4px 6px !important;
+    font-size: 12px !important;
+    height: 26px !important;
+    min-height: unset !important;
+  }
+
+  /* Labels */
+  .section-label, div[style*="color: white"] {
+    font-size: 11px !important;
+    margin-bottom: 2px !important;
+    line-height: 1 !important;
+  }
+
+  /* Position X,Y,Z labels */
+  span[style*="color: rgb"] {
+    font-size: 10px !important;
+    margin-bottom: 1px !important;
+  }
+
+  /* Slider containers */
+  div[style*="margin-bottom: 16px"],
+  div[style*="margin-bottom: 24px"],
+  div[style*="margin-bottom: 8px"] {
+    margin-bottom: 6px !important;
+  }
+
+  /* Sliders */
+  input[type="range"] {
+    margin: 2px 0 !important;
+    height: 4px !important;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    width: 14px !important;
+    height: 14px !important;
+    margin-top: -5px !important;
+  }
+  
+  #ui-panel.ui-controls.collapsed {
+    background: none !important;
+    backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    padding: 0 !important;
+}
+
+/* Base styles for the panel when not collapsed */
+#ui-panel {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(17, 25, 40, 0.75);
+    backdrop-filter: blur(12px);
+    border: 0px solid rgba(255, 255, 255, 0.125);
+    border-radius: 16px;
+    z-index: 1000;
+    transform: scale(1);
+    transform-origin: top right;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    padding: 10px;
+}
+
+  input[type="range"]::-moz-range-thumb {
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  /* Slider values */
+  #scale-value, #rotation-value {
+    font-size: 11px !important;
+    margin-top: 2px !important;
+  }
+
+  /* Action buttons */
+  button {
+    padding: 6px !important;
+    font-size: 12px !important;
+    height: 28px !important;
+    margin-bottom: 4px !important;
+    line-height: 1 !important;
+    min-height: unset !important;
+  }
+
+  /* Button container */
+  div[style*="flex-direction: column"] {
+    gap: 4px !important;
+  }
+
+  /* Toggle button */
+  #toggle-ui {
+    top: -28px !important;
+    height: 28px !important;
+    padding: 4px 10px !important;
+    font-size: 11px !important;
+    min-height: unset !important;
+  }
+
+  /* Collapsed state adjustment */
+ #ui-panel.collapsed {
+    padding: 0;
+    background: none;
+    box-shadow: none;  /* Add this */
+}
+
+
+
+/* Additional style fixes */
+input, button, select {
+    margin: 2px 0 !important;
+    min-height: unset !important;
+}
+
+div[style*="gap: 8px"] {
+    gap: 4px !important;
+}
+
+/* Remove any default margins/padding that might add height */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Ensure container spacing is minimal */
+#ui-panel > div {
+    margin-bottom: 6px !important;
+}
+
+/* Make all containers more compact */
+div[style*="padding: 24px"] {
+    padding: 8px !important;
+}
+
+#ui-panel.collapsed #toggle-ui {
+    transform: rotate(-90deg);
+}
+    
+    /* For better mobile touch targets */
+    select, input, button {
+        min-height: 44px;
+        font-size: 16px;
+    }
+
+    .loading {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+    /* Add these new styles */
+  #ui-panel.collapsed #ui-content {
+    display: none;
+}
+
+  #ui-panel.collapsed {
+    padding: 0;
+    background: none;
+  }
+
+  #toggle-ui {
+    transition: transform 0.3s ease-in-out;
+  }
+
+  #ui-panel.collapsed #toggle-ui {
+    transform: rotate(-90deg);
+    border-radius: 8px;  /* Add this */
+    background: #2196F3;  /* Add this to ensure consistent color */
+}
+
+  @media (max-width: 768px) {
+    #ui-panel {
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+  }
+  </style>
+  
+  <!-- END STYLE SECTION -->
+
+  
+  
+</head>
+
+<body>
+  <div id="container"></div>
+  
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <div class="loading-text">Loading Experience... 0%</div>
+    <div class="loader">
+      <div class="progress-bar"></div>
+    </div>
+  </div>
+
+
+   <!-- UI Panel for 3D Objects -->
+   
+   
+    <!-- START OF UI PANEL HTML SECTION -->
+
+   
+<div id="ui-panel" class="ui-controls" style="position: fixed; 
+    top: 20px; 
+    right: 20px; 
+    background: rgba(17, 25, 40, 0.75); 
+    backdrop-filter: blur(12px); 
+    border: 0px solid rgba(255, 255, 255, 0.125); 
+    border-radius: 16px; 
+    z-index: 1000; 
+    transform: scale(1.1); 
+    transform-origin: top right; 
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    padding: 10px;                              /* Added padding */
+    font-family: 'Poppins', sans-serif;">       
+    
+    
+    
+    <!-- Updated toggle button styling with distinctive color -->
+    <button id="toggle-ui" style="position: absolute; top: -45px; right: 0; padding: 10px 20px; background: #2196F3; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-family: system-ui, sans-serif; font-weight: 400; transition: all 0.3s ease; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+        <span style="font-size: 14px;">▼ Controls</span>
+    </button>
+    
+    <!-- Content container -->
+    <div id="ui-content" style="padding: 24px 14px;"> 
+        <h3 style="margin: 0 0 20px 0; color: white; font-family: 'Inter', system-ui, sans-serif; font-weight: 600; font-size: 18px;">Add 3D Object</h3>
+        
+        <!-- Object Selection with fixed styling -->
+        <select id="object-type" style="width: 100%; padding: 12px; background: rgba(17, 25, 40, 0.9); color: white; border: 1px solid rgba(255, 255, 255, 0.125); border-radius: 12px; margin-bottom: 16px; font-family: 'Inter', system-ui, sans-serif; cursor: pointer; transition: all 0.3s ease; -webkit-appearance: none; appearance: none; background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath d=\'M2 4 L6 8 L10 4\' stroke=\'white\' fill=\'none\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E'); background-position: right 8px center; background-repeat: no-repeat; background-size: 12px; padding-right: 28px;">
+            <option value="cube" style="background: rgba(17, 25, 40, 0.9); color: white;">Cube</option>
+            <option value="sphere" style="background: rgba(17, 25, 40, 0.9); color: white;">Sphere</option>
+            <option value="custom" style="background: rgba(17, 25, 40, 0.9); color: white;">Custom GLB Model</option>
+            <option value="fbx" style="background: rgba(17, 25, 40, 0.9); color: white;">FBX Model</option>
+        </select>
+
+        <input type="file" id="model-file" accept=".glb,.gltf" style="display: none;">
+        <div id="file-name" style="font-size: 14px; margin-top: 8px; color: rgba(255, 255, 255, 0.7); display: none;"></div>
+
+       <!-- Model URL Input -->
+<div style="margin-bottom: 16px;">
+    <div style="margin-bottom: 8px; color: white; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px;">Model URL</div>
+    <div style="display: flex; gap: 8px;">
+        <input type="text" id="model-url" placeholder="Enter GLB URL" 
+            style="flex: 1;                    /* Changed from flex-grow: 1 */
+                   min-width: 0;              /* Added to prevent overflow */
+                   padding: 8px 12px;         /* Adjusted padding */
+                   background: rgba(255, 255, 255, 0.05);
+                   color: white;
+                   border: 1px solid rgba(255, 255, 255, 0.125);
+                   border-radius: 12px;
+                   font-family: inherit;">
+        <button id="paste-url" 
+            style="min-width: 60px;           /* Added min-width */
+                   white-space: nowrap;       /* Prevent text wrapping */
+                   padding: 8px 12px;         /* Adjusted padding */
+                   background: rgba(255, 255, 255, 0.1);
+                   color: white;
+                   border: none;
+                   border-radius: 12px;
+                   cursor: pointer;
+                   transition: all 0.3s ease;
+                   font-family: inherit;">
+            Paste
+        </button>
+    </div>
+</div>
+
+       <!-- Position inputs with modern styling -->
+<div style="margin-bottom: 16px;">
+    <div style="margin-bottom: 8px; color: white; font-family: 'Inter', system-ui, sans-serif; font-size: 14px;">Position</div>
+    <div style="display: flex; gap: 8px;">
+        <input type="tel" id="pos-x" value="0" inputmode="numeric" 
+            style="width: 70px; 
+                   padding: 12px; 
+                   background: rgba(52, 152, 219, 0.1); 
+                   color: white; 
+                   border: 1px solid rgba(52, 152, 219, 0.3); 
+                   border-radius: 12px; 
+                   -webkit-appearance: none; 
+                   text-align: center; 
+                   font-family: 'Inter', system-ui, sans-serif;
+                   transition: all 0.3s ease;
+                   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+                   backdrop-filter: blur(4px);">
+        <input type="tel" id="pos-y" value="0" inputmode="numeric" 
+            style="width: 70px; 
+                   padding: 12px; 
+                   background: rgba(46, 204, 113, 0.1); 
+                   color: white; 
+                   border: 1px solid rgba(46, 204, 113, 0.3); 
+                   border-radius: 12px; 
+                   -webkit-appearance: none; 
+                   text-align: center; 
+                   font-family: 'Inter', system-ui, sans-serif;
+                   transition: all 0.3s ease;
+                   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+                   backdrop-filter: blur(4px);">
+        <input type="tel" id="pos-z" value="-3" inputmode="numeric" 
+            style="width: 70px; 
+                   padding: 12px; 
+                   background: rgba(155, 89, 182, 0.1); 
+                   color: white; 
+                   border: 1px solid rgba(155, 89, 182, 0.3); 
+                   border-radius: 12px; 
+                   -webkit-appearance: none; 
+                   text-align: center; 
+                   font-family: 'Inter', system-ui, sans-serif;
+                   transition: all 0.3s ease;
+                   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+                   backdrop-filter: blur(4px);">
+    </div>
+    
+</div>
+
+<style>
+/* Hover states for inputs */
+input[type="tel"]:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Focus states for inputs */
+input[type="tel"]:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+/* Placeholder styling */
+input[type="tel"]::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+</style>
+
+        <!-- Scale Control with improved slider styling -->
+        <div style="margin-bottom: 16px;">
+            <div style="margin-bottom: 8px; color: white; font-family: 'Inter', system-ui, sans-serif; font-size: 14px;">Scale</div>
+            <input type="range" id="scale" min="0.1" max="5" step="0.1" value="1" 
+                style="width: 100%; height: 6px; -webkit-appearance: none; appearance: none; background: rgba(255, 255, 255, 0.3); border-radius: 3px; cursor: pointer; outline: none;">
+            <style>
+                input[type="range"] {
+                    background: linear-gradient(to right, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5));
+                }
+                input[type="range"]::-webkit-slider-runnable-track {
+                    height: 6px;
+                    background: rgba(255, 255, 255, 0.5);
+                    border-radius: 3px;
+                }
+                input[type="range"]::-moz-range-track {
+                    height: 6px;
+                    background: rgba(255, 255, 255, 0.5);
+                    border-radius: 3px;
+                }
+                input[type="range"]::-webkit-slider-thumb {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    width: 18px;
+                    height: 18px;
+                    background: white;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    margin-top: -6px;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                }
+                input[type="range"]::-moz-range-thumb {
+                    width: 18px;
+                    height: 18px;
+                    background: white;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    border: none;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                }
+                input[type="range"]:hover::-webkit-slider-thumb {
+                    background: #f0f0f0;
+                }
+                input[type="range"]:hover::-moz-range-thumb {
+                    background: #f0f0f0;
+                }
+            </style>
+            <div id="scale-value" style="text-align: center; color: white; margin-top: 8px; font-family: 'Inter', system-ui, sans-serif; font-size: 14px;">1.0</div>
+        </div>
+
+        <!-- Rotation Control with improved slider styling -->
+        <div style="margin-bottom: 24px;">
+            <div style="margin-bottom: 8px; color: white; font-family: 'Inter', system-ui, sans-serif; font-size: 14px;">Rotation (Y)</div>
+            <input type="range" id="rotation" min="0" max="360" step="1" value="0" 
+                style="width: 100%; height: 6px; -webkit-appearance: none; appearance: none; background: rgba(255, 255, 255, 0.3); border-radius: 3px; cursor: pointer; outline: none;">
+            <div id="rotation-value" style="text-align: center; color: white; margin-top: 8px; font-family: 'Inter', system-ui, sans-serif; font-size: 14px;">0°</div>
+        </div>
+
+      <!-- Action Buttons -->
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 5px;">
+    <button id="add-object" 
+        style="width: 100%; 
+               padding: 12px;
+               background: linear-gradient(135deg, #4CAF50, #2E7D32);
+               color: white; 
+               border: none;
+               border-radius: 12px;
+               cursor: pointer;
+               font-family: 'Inter', system-ui, sans-serif;
+               font-weight: 500;
+               font-size: 14px;
+               letter-spacing: 0.3px;
+               transition: all 0.3s ease;
+               box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
+        Add Object
+    </button>
+    <button id="clear-objects" 
+        style="width: 100%; 
+               padding: 12px;
+               background: linear-gradient(135deg, #f44336, #c62828);
+               color: white; 
+               border: none;
+               border-radius: 12px;
+               cursor: pointer;
+               font-family: 'Inter', system-ui, sans-serif;
+               font-weight: 500;
+               font-size: 14px;
+               letter-spacing: 0.3px;
+               transition: all 0.3s ease;
+               box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
+        Clear All Objects
+    </button>
+    <button id="toggle-sphere" 
+        style="width: 100%; 
+               padding: 12px;
+               background: linear-gradient(135deg, #2196F3, #1565C0);
+               color: white; 
+               border: none;
+               border-radius: 12px;
+               cursor: pointer;
+               font-family: 'Inter', system-ui, sans-serif;
+               font-weight: 500;
+               font-size: 14px;
+               letter-spacing: 0.3px;
+               transition: all 0.3s ease;
+               box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
+        Toggle Sphere Visibility
+    </button>
+    <button id="save-positions" 
+        style="width: 100%; 
+               padding: 12px;
+               background: linear-gradient(135deg, #9C27B0, #6A1B9A);
+               color: white; 
+               border: none;
+               border-radius: 12px;
+               cursor: pointer;
+               font-family: 'Inter', system-ui, sans-serif;
+               font-weight: 500;
+               font-size: 14px;
+               letter-spacing: 0.3px;
+               transition: all 0.3s ease;
+               box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
+        Save Video Positions
+    </button>
+    <button id="toggle-audio" 
+        style="width: 100%; 
+               padding: 12px;
+               background: linear-gradient(135deg, #FF5722, #D84315);
+               color: white; 
+               border: none;
+               border-radius: 12px;
+               cursor: pointer;
+               font-family: 'Inter', system-ui, sans-serif;
+               font-weight: 500;
+               font-size: 14px;
+               letter-spacing: 0.3px;
+               transition: all 0.3s ease;
+               box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
+  Toggle Audio
+    </button>
+    <button id="toggle-gyroscope" 
+        style="width: 100%; 
+               padding: 12px;
+               background: linear-gradient(135deg, #673AB7, #4527A0);
+               color: white; 
+               border: none;
+               border-radius: 12px;
+               cursor: pointer;
+               font-family: 'Inter', system-ui, sans-serif;
+               font-weight: 500;
+               font-size: 14px;
+               letter-spacing: 0.3px;
+               transition: all 0.3s ease;
+               box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
+        Toggle Gyroscope
+    </button>
+</div>
+    </div>
+</div>
+
+
+<!-- END OF UI PANEL HTML SECTION -->
+
+<script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "../build/three.module.js",
+        "three/examples/jsm/": "./jsm/"
+      }
+    }
+  </script>
+  <script type="module">
+  import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+    import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
+    import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
+    import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+    let camera, scene, renderer, sphere, clock, controls;
+    let videoPlane; // Add this line
+    let isUserInteracting = false;
+    let onMouseDownMouseX = 0, onMouseDownMouseY = 0;
+    let lon = 0, onMouseDownLon = 0;
+    let lat = 0, onMouseDownLat = 0;
+    let selectedObject = null;
+    let selectedController = null;
+    let initialPinchDistance = 0;
+    let isRotating = false;
+    let lastControllerPosition = new THREE.Vector3();
+    let rotationSpeed = 0.1;
+    let isGrabbing = false;
+    let isGyroAvailable = false;
+    let sceneObjects = []; // For 3D objects only
+let isGyroActive = false;
+let deviceOrientationPermission = false;
+let lastGyroAlpha = 0;
+let lastGyroBeta = 0;
+let lastGyroGamma = 0;
+let grabStartPosition = new THREE.Vector3();
+let currentRotation = new THREE.Euler();
+let initialAlpha = null;
+let currentAlpha = 0;
+let previousAlpha = 0;
+let rotationOffset = 0;
+    let initialFov = 80;
+    let controller1, controller2;
+let rotationStart = new THREE.Vector2();
+let backgroundAudio;
+
+let bothTriggersPressed = false;
+let rotationStartX = 0;
+    let objects = [];
+    const objectsGroup = new THREE.Group();
+
+    // Touch control speed constants
+    const TOUCH_HORIZONTAL_SPEED = 0.12;
+    const TOUCH_VERTICAL_SPEED = 0.12;
+    const PINCH_ZOOM_SPEED = 0.1;
+    const MOUSE_SPEED = 0.1;
+    
+    // Preloader elements
+    const loadingScreen = document.getElementById('loading-screen');
+    const progressBar = document.querySelector('.progress-bar');
+    const loadingText = document.querySelector('.loading-text');
+
+    // Create manager before init()
+    const manager = new THREE.LoadingManager();
+    
+    
+    
+// Enhanced video plane creation function with more options
+function createVideoPlane(videoConfig) {
+    // Extract all configuration options with defaults
+    const {
+        src,
+        position = { x: 0, y: 0, z: -20 },
+        scale = 0.3,
+        width = 5.6,          // Default width
+        height = 9,           // Default height
+        opacity = 0.8,        // Default opacity/transparency (0-1)
+        featherSize = 0.1,    // Default feather edge size
+        blendMode = 'additive', // Default blend mode
+        rotation = 0          // Default rotation in degrees
+    } = videoConfig;
+
+    // Tell loading manager we're starting
+    manager.itemStart(src);
+
+    // Create video element
+    const video = document.createElement('video');
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.crossOrigin = 'anonymous';
+    video.preload = 'auto';
+
+    // Setup all event listeners before setting src
+    video.addEventListener('loadeddata', () => {
+        console.log(`Video loaded successfully: ${src}`);
+        // Only try to play after loaded
+        video.play().catch(error => {
+            console.warn("Auto-play failed, will try on user interaction:", error);
+        });
+        manager.itemEnd(src);
+    });
+
+    video.addEventListener('error', (e) => {
+        console.error(`Error loading video ${src}:`, e);
+        manager.itemError(src);
+    });
+
+    // Set the source last
+    video.src = src;
+
+    // Create video texture with better settings
+    const videoTexture = new THREE.VideoTexture(video);
+    videoTexture.minFilter = THREE.LinearFilter;
+    videoTexture.magFilter = THREE.LinearFilter;
+    videoTexture.format = THREE.RGBAFormat;
+    videoTexture.generateMipmaps = false;
+
+    // Set up blend mode
+    let blendingMode;
+    switch(blendMode.toLowerCase()) {
+        case 'additive':
+            blendingMode = THREE.AdditiveBlending;
+            break;
+        case 'multiply':
+            blendingMode = THREE.MultiplyBlending;
+            break;
+        case 'normal':
+            blendingMode = THREE.NormalBlending;
+            break;
+        case 'subtract':
+            blendingMode = THREE.SubtractiveBlending;
+            break;
+        default:
+            blendingMode = THREE.AdditiveBlending;
+    }
+
+    // Create material with blending
+    const videoMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+            videoTexture: { value: videoTexture },
+            featherSize: { value: featherSize },
+            opacity: { value: opacity }
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+        fragmentShader: `
+            uniform sampler2D videoTexture;
+            uniform float featherSize;
+            uniform float opacity;
+            varying vec2 vUv;
+            
+            void main() {
+                vec4 texColor = texture2D(videoTexture, vUv);
+                vec2 center = vec2(0.5, 0.5);
+                float dist = distance(vUv, center);
+                float alpha = 1.0 - smoothstep(0.5 - featherSize, 0.5, dist);
+                gl_FragColor = vec4(texColor.rgb, texColor.a * alpha * opacity);
+            }
+        `,
+        transparent: true,
+        blending: blendingMode,
+        side: THREE.DoubleSide,
+        depthWrite: false
+    });
+
+    // Create plane with custom dimensions
+    const planeGeometry = new THREE.PlaneGeometry(width, height);
+    const videoPlane = new THREE.Mesh(planeGeometry, videoMaterial);
+
+    // Generate unique identifier
+    const videoId = 'video_' + Math.random().toString(36).substr(2, 9);
+    videoPlane.name = videoId;
+
+    // Store the source path in userData for reference
+    videoPlane.userData.src = src;
+    videoPlane.userData.video = video;  // Store video reference
+
+    // Check for saved position
+    const savedPosition = localStorage.getItem(videoId + '_position');
+    if (savedPosition) {
+        try {
+            const positionData = JSON.parse(savedPosition);
+            videoPlane.position.set(positionData.x, positionData.y, positionData.z);
+            videoPlane.rotation.y = positionData.rotationY;
+        } catch (error) {
+            console.error('Error loading saved position:', error);
+            videoPlane.position.set(position.x, position.y, position.z);
+            videoPlane.rotation.y = THREE.MathUtils.degToRad(rotation);
+        }
+    } else {
+        videoPlane.position.set(position.x, position.y, position.z);
+        videoPlane.rotation.y = THREE.MathUtils.degToRad(rotation);
+    }
+
+    // Store all the important data in userData
+    videoPlane.userData = {
+        ...videoPlane.userData,        // Preserve any existing userData
+        initialRotation: videoPlane.rotation.y,
+        isVR: false,
+        videoId: videoId,
+        config: videoConfig,           // Store original config
+        video: video,                  // Store video element reference
+        texture: videoTexture,         // Store texture reference
+        initialPosition: {             // Store initial position
+            x: position.x,
+            y: position.y,
+            z: position.z
+        }
+    };
+
+    // Set scale
+    videoPlane.scale.setScalar(scale);
+
+    // Add to scene and make it grabbable
+    scene.add(videoPlane);
+    objects.push(videoPlane);
+
+    return videoPlane;
+}
+// Add this function to your code
+function saveVideoPositionsToFile() {
+    const positions = {};
+    objects.forEach(obj => {
+        if (obj.userData.videoId) {
+            positions[obj.userData.src] = {
+                x: obj.position.x,
+                y: obj.position.y,
+                z: obj.position.z,
+                rotationY: obj.rotation.y
+            };
+        }
+    });
+    
+    // Create a download link for the positions file
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(positions, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "video_positions.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+}
+
+// Updated setup function for multiple videos
+function setupVideos(videosList) {
+    const videos = [];
+    videosList.forEach((videoConfig) => {
+        const videoPlane = createVideoPlane(videoConfig);
+        videos.push(videoPlane);
+    });
+    return videos;
+}
+
+// Function to save video plane position
+function saveVideoPosition(videoPlane) {
+    const positionData = {
+        x: videoPlane.position.x,
+        y: videoPlane.position.y,
+        z: videoPlane.position.z,
+        rotationY: videoPlane.rotation.y
+    };
+    localStorage.setItem(videoPlane.userData.videoId + '_position', JSON.stringify(positionData));
+}
+
+
+    
+    // Setup manager callbacks
+    manager.onProgress = function (url, itemsLoaded, itemsTotal) {
+      const progress = (itemsLoaded / itemsTotal) * 100;
+      progressBar.style.width = `${progress}%`;
+      loadingText.textContent = `Loading Experience... ${Math.round(progress)}%`;
+       console.log(`Loading: ${url} - ${itemsLoaded} of ${itemsTotal} items`);
+    };
+
+    manager.onLoad = function () {
+      console.log('Loading complete!');
+      loadingScreen.classList.add('fade-out');// Add this: Start audio after loading
+    setupBackgroundAudio();
+    
+    // Add click handler for audio (needed due to browser autoplay policies)
+    const startAudio = () => {
+        backgroundAudio.play().catch(error => {
+            console.warn("Audio autoplay failed:", error);
+        });
+        document.removeEventListener('click', startAudio);
+    };
+    document.addEventListener('click', startAudio);
+};
+
+    manager.onError = function (url) {
+      console.error('Error loading:', url);
+      loadingText.textContent = 'Error loading experience. Please refresh.';
+      loadingText.style.color = '#ff0000';
+    };
+    
+function preventPanoramaInteraction(event) {
+    event.stopPropagation();
+}
+    init();
+    animate();
+    
+
+function initUIControls() {
+  // Get UI elements
+  
+  
+
+const audioButton = document.getElementById('toggle-audio');
+audioButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (backgroundAudio) {
+        if (backgroundAudio.paused) {
+            backgroundAudio.play();
+            audioButton.textContent = 'Mute Audio';
+        } else {
+            backgroundAudio.pause();
+            audioButton.textContent = 'Play Audio';
+        }
+    }
+});
+
+  const addObjectButton = document.getElementById('add-object');
+  const clearObjectsButton = document.getElementById('clear-objects');
+  const objectType = document.getElementById('object-type');
+  const scaleSlider = document.getElementById('scale');
+  const scaleValue = document.getElementById('scale-value');
+  const rotationSlider = document.getElementById('rotation');
+  const rotationValue = document.getElementById('rotation-value');
+  const posX = document.getElementById('pos-x');
+  const posY = document.getElementById('pos-y');
+  const posZ = document.getElementById('pos-z');
+  const toggleSphereButton = document.getElementById('toggle-sphere');
+  const modelFile = document.getElementById('model-file');
+  const fileName = document.getElementById('file-name');
+  const pasteButton = document.getElementById('paste-url');
+  const modelUrlInput = document.getElementById('model-url');
+  const toggleUIButton = document.getElementById('toggle-ui');
+  const uiPanel = document.getElementById('ui-panel');
+  
+  [posX, posY, posZ].forEach(input => {
+    input.addEventListener('input', (e) => {
+      e.stopPropagation();
+      // Remove any characters that aren't numbers, decimal points, or minus signs
+      let value = e.target.value.replace(/[^\d.-]/g, '');
+      
+      // Ensure only one decimal point and one minus sign at the start
+      const parts = value.split('.');
+      if (parts.length > 2) {
+        value = parts[0] + '.' + parts.slice(1).join('');
+      }
+      if (value.indexOf('-') > 0) {
+        value = value.replace('-', '');
+      }
+      
+      e.target.value = value;
+      console.log(`${e.target.id} position:`, value);
+    });
+  });
+
+  // Add UI toggle functionality
+  toggleUIButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isCollapsed = uiPanel.classList.toggle('collapsed');
+    toggleUIButton.textContent = isCollapsed ? '◀ Controls' : '▼ Controls';
+    localStorage.setItem('uiPanelCollapsed', isCollapsed);
+  });
+
+  // Restore previous state
+  const wasCollapsed = localStorage.getItem('uiPanelCollapsed') === 'true';
+  if (wasCollapsed) {
+    uiPanel.classList.add('collapsed');
+    toggleUIButton.textContent = '◀ Controls';
+  }
+
+  pasteButton.addEventListener('click', async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      modelUrlInput.value = text;
+    } catch (err) {
+      console.error('Failed to read clipboard:', err);
+    }
+  });
+
+document.getElementById('save-positions').addEventListener('click', (e) => {
+            e.stopPropagation();
+            saveVideoPositionsToFile();
+        });
+
+  // Add keyboard shortcut for paste (Ctrl+V or Cmd+V)
+  modelUrlInput.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+      e.preventDefault();
+      navigator.clipboard.readText().then(text => {
+        modelUrlInput.value = text;
+      }).catch(err => {
+        console.error('Failed to read clipboard:', err);
+      });
+    }
+  });
+
+  // Prevent panorama interaction when using UI
+  const uiPanel2 = document.querySelector('.ui-controls');
+  const stopEvent = (e) => {
+    e.stopPropagation();
+    isUserInteracting = false;
+  };
+
+  // Add event prevention to UI panel and all its inputs
+  [uiPanel2, objectType, scaleSlider, rotationSlider, posX, posY, posZ, addObjectButton, clearObjectsButton].forEach(element => {
+    element.addEventListener('mousedown', stopEvent);
+    element.addEventListener('mousemove', stopEvent);
+    element.addEventListener('mouseup', stopEvent);
+    element.addEventListener('touchstart', stopEvent);
+    element.addEventListener('touchmove', stopEvent);
+    element.addEventListener('touchend', stopEvent);
+    element.addEventListener('wheel', stopEvent);
+    element.addEventListener('click', stopEvent);
+  });
+
+  // Add the objectsGroup to the scene
+  scene.add(objectsGroup);
+
+  // Add directional light for better object visibility
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+  directionalLight.position.set(1, 1, 1);
+  scene.add(directionalLight);
+
+  // Update scale value display
+scaleSlider.addEventListener('input', (e) => {
+    e.stopPropagation();
+    const newScale = parseFloat(e.target.value);
+    scaleValue.textContent = newScale.toFixed(1);
+
+    // Update only scene objects, not video
+    sceneObjects.forEach(object => {
+        const baseScale = object.userData.initialScaleFactor || 1;
+        object.scale.setScalar(baseScale * newScale);
+    });
+    objectsGroup.children.forEach(object => {
+        if (object !== videoPlane) { // Skip video plane
+            const baseScale = object.userData.initialScaleFactor || 1;
+            object.scale.setScalar(baseScale * newScale);
+        }
+    });
+});
+
+// Update rotation value display
+rotationSlider.addEventListener('input', (e) => {
+    e.stopPropagation();
+    const degrees = parseFloat(e.target.value);
+    rotationValue.textContent = `${degrees}°`;
+    const radians = THREE.MathUtils.degToRad(degrees);
+
+    // Update only scene objects, not video
+    sceneObjects.forEach(object => {
+        if (object !== videoPlane) { // Skip video plane
+            object.rotation.y = radians;
+            object.userData.initialRotation = radians;
+        }
+    });
+    objectsGroup.children.forEach(object => {
+        if (object !== videoPlane) { // Skip video plane
+            object.rotation.y = radians;
+            object.userData.initialRotation = radians;
+        }
+    });
+});
+
+// Position inputs
+[posX, posY, posZ].forEach(input => {
+    input.addEventListener('input', (e) => {
+        e.stopPropagation();
+        // ... existing validation code ...
+        
+        const x = parseFloat(posX.value) || 0;
+        const y = parseFloat(posY.value) || 0;
+        const z = parseFloat(posZ.value) || -3;
+
+        // Update only scene objects, not video
+        sceneObjects.forEach(object => {
+            if (object !== videoPlane) { // Skip video plane
+                object.position.set(x, y, z);
+            }
+        });
+        objectsGroup.children.forEach(object => {
+            if (object !== videoPlane) { // Skip video plane
+                object.position.set(x, y, z);
+            }
+        });
+    });
+});
+
+
+  // Handle object type selection
+  objectType.addEventListener('change', (e) => {
+    e.stopPropagation();
+    if (e.target.value === 'custom' || e.target.value === 'fbx') {
+        modelFile.style.display = 'block';
+        fileName.style.display = 'block';
+        const urlInput = document.getElementById('model-url').parentElement.parentElement;
+        urlInput.style.display = 'block';
+    } else {
+        modelFile.style.display = 'none';
+        fileName.style.display = 'none';
+        const urlInput = document.getElementById('model-url').parentElement.parentElement;
+        urlInput.style.display = 'none';
+    }
+    console.log('Selected type:', objectType.value);
+});
+
+  modelFile.addEventListener('change', (e) => {
+    e.stopPropagation();
+    if (e.target.files.length > 0) {
+      fileName.textContent = `Selected: ${e.target.files[0].name}`;
+    }
+  });
+
+ 
+   
+
+  toggleSphereButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (sphere) {
+      sphere.visible = !sphere.visible;
+      toggleSphereButton.textContent = sphere.visible ? 'Hide Sphere' : 'Show Sphere';
+    }
+  });
+
+  addObjectButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    // Get current values from UI
+    const type = objectType.value;
+    const x = parseFloat(posX.value) || 0;
+    const y = parseFloat(posY.value) || 0;
+    const z = parseFloat(posZ.value) || -3;
+    const scale = parseFloat(scaleSlider.value);
+    const rotation = THREE.MathUtils.degToRad(parseFloat(rotationSlider.value));
+
+    if (type === 'custom')    {
+      const loader = new GLTFLoader();
+
+      const loadingText = document.createElement('div');
+      loadingText.style.color = 'white';
+      loadingText.style.position = 'fixed';
+      loadingText.style.top = '50%';
+      loadingText.style.left = '50%';
+      loadingText.style.transform = 'translate(-50%, -50%)';
+      loadingText.style.background = 'rgba(0, 0, 0, 0.7)';
+      loadingText.style.padding = '20px';
+      loadingText.style.borderRadius = '10px';
+      loadingText.style.zIndex = '10000';
+      loadingText.textContent = 'Starting to load model...';
+      document.body.appendChild(loadingText);
+
+      const modelUrl = document.getElementById('model-url').value;
+
+      if (!modelUrl) {
+        loadingText.textContent = 'Please enter a model URL';
+        setTimeout(() => document.body.removeChild(loadingText), 2000);
+        return;
+      }
+
+      // Create a helper box at target position
+      const helperBox = new THREE.Mesh(
+        new THREE.BoxGeometry(1, 1, 1),
+        new THREE.MeshBasicMaterial({
+          color: 0xff0000,
+          wireframe: true,
+          transparent: true,
+          opacity: 0.5
+        })
+      );
+      helperBox.position.set(x, y, z);
+      scene.add(helperBox);
+
+     loader.load(
+  modelUrl,
+  function (gltf) {
+    loadingText.textContent = 'Model loaded, processing...';
+
+    const model = gltf.scene;
+
+    // Get model size and scale appropriately
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+
+    // Store the initial scale factor for later use
+    const initialScaleFactor = 1 / maxDim;
+    model.userData.initialScaleFactor = initialScaleFactor;
+
+    // Apply initial scale
+    model.scale.setScalar(initialScaleFactor * scale);
+
+    // Position model
+    model.position.set(x, y, z);
+    model.rotation.y = rotation;
+
+    // Store initial rotation for VR mode
+    model.userData.initialRotation = rotation;
+    model.userData.isVR = false;
+
+    // Add raycasting support to all meshes in the model
+    model.traverse((node) => {
+      if (node.isMesh) {
+        // Keep original material but ensure proper rendering settings
+        node.material.side = THREE.DoubleSide;
+        node.material.needsUpdate = true;
+        node.renderOrder = 999;
+        node.frustumCulled = false;
+        
+        // Make sure the mesh can be raycasted
+        node.raycast = THREE.Mesh.prototype.raycast;
+      }
+    });
+
+    // Add model to scene
+    scene.add(model);
+    
+    // Add to both arrays to ensure compatibility
+    objects.push(model);
+    sceneObjects.push(model);
+
+    // Add lighting for better visibility
+    const lightGroup = new THREE.Group();
+
+    // Add subtle directional light
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
+    directionalLight.position.set(1, 1, 1);
+    lightGroup.add(directionalLight);
+
+    // Add subtle point light
+    const pointLight = new THREE.PointLight(0xffffff, 0.2, 5);
+    pointLight.position.set(0, 1, 0);
+    lightGroup.add(pointLight);
+
+    // Add lights to model
+    model.add(lightGroup);
+
+    loadingText.textContent = 'Model loaded successfully!';
+    setTimeout(() => {
+      document.body.removeChild(loadingText);
+      scene.remove(helperBox);
+    }, 2000);
+  },
+  function (xhr) {
+    if (xhr.lengthComputable) {
+      const percent = xhr.loaded / xhr.total * 100;
+      loadingText.textContent = `Loading: ${Math.round(percent)}%`;
+    }
+  },
+  function (error) {
+    console.error('Error loading model:', error);
+    loadingText.textContent = 'Error loading model: ' + error.message;
+    scene.remove(helperBox);
+    setTimeout(() => document.body.removeChild(loadingText), 2000);
+  }
+      );
+     } else if (type === 'fbx') {
+    const loader = new FBXLoader();
+
+    const loadingText = document.createElement('div');
+    loadingText.style.color = 'white';
+    loadingText.style.position = 'fixed';
+    loadingText.style.top = '50%';
+    loadingText.style.left = '50%';
+    loadingText.style.transform = 'translate(-50%, -50%)';
+    loadingText.style.background = 'rgba(0, 0, 0, 0.7)';
+    loadingText.style.padding = '20px';
+    loadingText.style.borderRadius = '10px';
+    loadingText.style.zIndex = '10000';
+    loadingText.textContent = 'Starting to load FBX model...';
+    document.body.appendChild(loadingText);
+
+    const modelUrl = document.getElementById('model-url').value;
+
+    if (!modelUrl) {
+        loadingText.textContent = 'Please enter a model URL';
+        setTimeout(() => document.body.removeChild(loadingText), 2000);
+        return;
+    }
+
+
+
+
+    // Create a helper box at target position
+    const helperBox = new THREE.Mesh(
+        new THREE.BoxGeometry(1, 1, 1),
+        new THREE.MeshBasicMaterial({
+            color: 0xff0000,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.5
+        })
+    );
+    helperBox.position.set(x, y, z);
+    scene.add(helperBox);
+
+    loader.load(
+        modelUrl,
+        function (fbx) {
+            loadingText.textContent = 'FBX model loaded, processing...';
+
+         
+            // Scale model to reasonable size
+const bbox = new THREE.Box3().setFromObject(fbx);
+const size = bbox.getSize(new THREE.Vector3());
+const maxDim = Math.max(size.x, size.y, size.z);
+
+// Store the initial scale factor for later use
+const initialScaleFactor = 1 / maxDim;
+fbx.userData.initialScaleFactor = initialScaleFactor;
+
+// Apply initial scale
+fbx.scale.setScalar(initialScaleFactor * scale);
+
+            // Position model
+            fbx.position.set(x, y, z);
+            fbx.rotation.y = rotation;
+
+            // Set up materials
+            fbx.traverse((node) => {
+                if (node.isMesh) {
+                    node.material.side = THREE.DoubleSide;
+                    node.material.needsUpdate = true;
+                    node.renderOrder = 999;
+                    node.frustumCulled = false;
+                    
+                    // Handle FBX specific material properties
+                    if (node.material.map) {
+                        node.material.map.anisotropy = 16;
+                    }
+                }
+            });
+
+            // Add model to scene
+            scene.add(fbx);
+            objects.push(fbx);
+            sceneObjects.push(fbx);
+
+            // Add lighting for better visibility
+            const lightGroup = new THREE.Group();
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
+            directionalLight.position.set(1, 1, 1);
+            lightGroup.add(directionalLight);
+
+            const pointLight = new THREE.PointLight(0xffffff, 0.2, 5);
+            pointLight.position.set(0, 1, 0);
+            lightGroup.add(pointLight);
+
+            fbx.add(lightGroup);
+
+            loadingText.textContent = 'FBX model loaded successfully!';
+            setTimeout(() => {
+                document.body.removeChild(loadingText);
+                scene.remove(helperBox);
+            }, 2000);
+        },
+        function (xhr) {
+            if (xhr.lengthComputable) {
+                const percent = xhr.loaded / xhr.total * 100;
+                loadingText.textContent = `Loading FBX: ${Math.round(percent)}%`;
+            }
+        },
+        function (error) {
+            console.error('Error loading FBX model:', error);
+            loadingText.textContent = 'Error loading FBX model: ' + error.message;
+            scene.remove(helperBox);
+            setTimeout(() => document.body.removeChild(loadingText), 2000);
+        }
+    );
+} else {
+    // Your existing cube and sphere code...
+      // Your existing cube and sphere creation code
+      let geometry, material;
+      if (type === 'cube') {
+        geometry = new THREE.BoxGeometry(1, 1, 1);
+      } else if (type === 'sphere') {
+        geometry = new THREE.SphereGeometry(0.5, 32, 32);
+      }
+      material = new THREE.MeshStandardMaterial({
+        color: 0x00ff00,
+        metalness: 0.3,
+        roughness: 0.7,
+        emissive: 0x002200
+      });
+      const object = new THREE.Mesh(geometry, material);
+      object.position.set(x, y, z);
+      object.scale.setScalar(scale);
+      object.rotation.y = rotation;
+
+      object.userData.initialRotation = rotation;
+      object.userData.isVR = false;
+
+      objectsGroup.add(object);
+      sceneObjects.push(object);
+    }
+  });
+
+  clearObjectsButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+
+    // Clear loaded models from scene directly
+    sceneObjects.forEach(object => {
+        if (object.isGroup) {
+            object.traverse((node) => {
+                if (node.isMesh) {
+                    if (node.geometry) node.geometry.dispose();
+                    if (node.material) node.material.dispose();
+                }
+            });
+        }
+        scene.remove(object);
+    });
+
+    // Clear objects from objectsGroup
+    while (objectsGroup.children.length > 0) {
+      const object = objectsGroup.children[0];
+      if (object.isGroup) {
+        // For GLTF models
+        object.traverse((node) => {
+          if (node.isMesh) {
+            if (node.geometry) node.geometry.dispose();
+            if (node.material) node.material.dispose();
+          }
+        });
+      } else {
+        // For basic geometries
+        if (object.geometry) object.geometry.dispose();
+        if (object.material) object.material.dispose();
+      }
+      objectsGroup.remove(object);
+    }
+
+    // Reset arrays and groups
+    objects = [];
+    objectsGroup.clear();
+
+    // Force a scene update
+    if (renderer) {
+      renderer.renderLists.dispose();
+    }
+
+    console.log('Cleanup complete');
+    console.log('Remaining objects:', objects.length);
+    console.log('Remaining in group:', objectsGroup.children.length);
+  });
+}
+    function onDocumentMouseDown(event) {
+      event.preventDefault();
+      isUserInteracting = true;
+      onMouseDownMouseX = event.clientX;
+      onMouseDownMouseY = event.clientY;
+      onMouseDownLon = lon;
+      onMouseDownLat = lat;
+    }
+
+    function onDocumentMouseMove(event) {
+      if (isUserInteracting === true) {
+        lon = (onMouseDownMouseX - event.clientX) * MOUSE_SPEED + onMouseDownLon;
+        lat = (event.clientY - onMouseDownMouseY) * MOUSE_SPEED + onMouseDownLat;
+      }
+    }
+
+    function onDocumentMouseUp() {
+      isUserInteracting = false;
+    }
+
+    function onDocumentTouchStart(event) {
+      if (event.touches.length === 1) {
+        event.preventDefault();
+        isUserInteracting = true;
+        onMouseDownMouseX = event.touches[0].pageX;
+        onMouseDownMouseY = event.touches[0].pageY;
+        onMouseDownLon = lon;
+        onMouseDownLat = lat;
+      } else if (event.touches.length === 2) {
+        event.preventDefault();
+        const touch1 = event.touches[0];
+        const touch2 = event.touches[1];
+        
+        initialPinchDistance = Math.hypot(
+          touch2.pageX - touch1.pageX,
+          touch2.pageY - touch1.pageY
+        );
+        initialFov = camera.fov;
+        
+        const centerX = (touch1.pageX + touch2.pageX) / 2;
+        const centerY = (touch1.pageY + touch2.pageY) / 2;
+        
+        onMouseDownMouseX = centerX;
+        onMouseDownMouseY = centerY;
+        onMouseDownLon = lon;
+        onMouseDownLat = lat;
+      }
+    }
+
+    function onDocumentTouchMove(event) {
+      if (event.touches.length === 1 && isUserInteracting) {
+        event.preventDefault();
+        lon = (onMouseDownMouseX - event.touches[0].pageX) * TOUCH_HORIZONTAL_SPEED + onMouseDownLon;
+        lat = (event.touches[0].pageY - onMouseDownMouseY) * TOUCH_VERTICAL_SPEED + onMouseDownLat;
+      } else if (event.touches.length === 2) {
+        event.preventDefault();
+        const touch1 = event.touches[0];
+        const touch2 = event.touches[1];
+        
+        const currentPinchDistance = Math.hypot(
+          touch2.pageX - touch1.pageX,
+          touch2.pageY - touch1.pageY
+        );
+        
+        const pinchDelta = initialPinchDistance - currentPinchDistance;
+        
+        camera.fov = initialFov + (pinchDelta * PINCH_ZOOM_SPEED);
+        camera.fov = Math.max(40, Math.min(100, camera.fov));
+        camera.updateProjectionMatrix();
+        
+        const centerX = (touch1.pageX + touch2.pageX) / 2;
+        const centerY = (touch1.pageY + touch2.pageY) / 2;
+        
+        const centerDeltaX = centerX - onMouseDownMouseX;
+        const centerDeltaY = centerY - onMouseDownMouseY;
+        
+        if (Math.abs(centerDeltaX) > 5 || Math.abs(centerDeltaY) > 5) {
+          lon = (onMouseDownMouseX - centerX) * TOUCH_HORIZONTAL_SPEED + onMouseDownLon;
+          lat = (centerY - onMouseDownMouseY) * TOUCH_VERTICAL_SPEED + onMouseDownLat;
+        }
+      }
+    }
+
+    function onDocumentTouchEnd(event) {
+      if (event.touches.length === 0) {
+        isUserInteracting = false;
+        initialPinchDistance = 0;
+        onMouseDownLon = lon;
+        onMouseDownLat = lat;
+      } else if (event.touches.length === 1) {
+        isUserInteracting = true;
+        onMouseDownMouseX = event.touches[0].pageX;
+        onMouseDownMouseY = event.touches[0].pageY;
+        onMouseDownLon = lon;
+        onMouseDownLat = lat;
+      }
+    }
+
+    function updateSphereRotation() {
+      lat = Math.max(-85, Math.min(85, lat));
+      const phi = THREE.MathUtils.degToRad(90 - lat);
+      const theta = THREE.MathUtils.degToRad(lon);
+
+      const x = Math.sin(phi) * Math.cos(theta);
+      const y = Math.cos(phi);
+      const z = Math.sin(phi) * Math.sin(theta);
+
+      camera.lookAt(new THREE.Vector3(x, y, z));
+    }
+
+function setupBackgroundAudio() {
+    backgroundAudio = new Audio('./bg-music1.mp3'); // Replace with your audio file path
+    backgroundAudio.loop = true;
+    backgroundAudio.volume = 0.5; // Adjust volume (0.0 to 1.0)
+}
+
+    function init() {
+      const container = document.getElementById('container');
+      clock = new THREE.Clock();
+
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x101010);
+
+      const light = new THREE.AmbientLight(0xffffff, 1);
+      scene.add(light);
+document.addEventListener('click', () => {
+    objects.forEach(obj => {
+        if (obj.userData.video) {
+            obj.userData.video.play().catch(error => {
+                console.warn("Playback failed:", error);
+            });
+        }
+    });
+}, { once: true });
+      camera = new THREE.PerspectiveCamera(initialFov, window.innerWidth / window.innerHeight, 1, 2000);
+      camera.position.set(0, 0, 0.1);  // Slight offset to prevent exactly-center issues
+camera.lookAt(0, 0, 1);
+      scene.add(camera);
+
+    const panoSphereGeo = new THREE.SphereGeometry(6, 256, 256);
+const panoSphereMat = new THREE.MeshStandardMaterial({
+    side: THREE.BackSide,
+    displacementScale: 2,
+    depthWrite: false // Changed this
+});
+
+sphere = new THREE.Mesh(panoSphereGeo, panoSphereMat);
+sphere.renderOrder = -999; // or whatever value you want to use
+
+      sphere = new THREE.Mesh(panoSphereGeo, panoSphereMat);
+
+      // Use the previously created manager
+      const loader = new THREE.TextureLoader(manager);
+
+      // Load textures
+      loader.load('./textures/spaceport4.jpg', function (texture) {
+        texture.minFilter = THREE.NearestFilter;
+        texture.generateMipmaps = false;
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.repeat.x = -1;
+        sphere.material.map = texture;
+        sphere.material.needsUpdate = true;
+      });
+
+      loader.load('./textures/spaceport-depth4.png', function (depth) {
+        depth.minFilter = THREE.NearestFilter;
+        depth.generateMipmaps = false;
+        sphere.material.displacementMap = depth;
+        sphere.material.needsUpdate = true;
+      });
+
+      scene.add(sphere);
+      
+      // Add this where the old video code was
+const videosList = [
+    {
+        src: './pirate-woman-audio.mp4',
+        position: { x: 4.5, y: -1, z: -3 },
+        rotation: -50,  // Rotated 45 degrees
+        scale: 0.5,
+        width: 5.6,
+        height: 9,
+        opacity: 1,
+        featherSize: 0.0,
+        blendMode: 'Overlay'
+    },
+    {
+        src: './tesla2.mp4',
+        position: { x: 4.5, y: 1.2, z: -5 },
+        rotation: -20,  // Rotated 90 degrees
+        scale: 0.4,
+        width: 8,
+        height: 6,
+        opacity: 0.4,
+        featherSize: 0.2,
+        blendMode: 'screen'
+    },
+    
+     {
+        src: './robot7.mp4',
+        position: { x: 5.81, y: -0.44, z: 3.17 },
+        rotation: 270,  // Rotated 90 degrees
+        scale: 0.22,
+        width: 6,
+        height: 10,
+        opacity: 1,
+        featherSize: 0.0,
+        blendMode: 'screen'
+    },
+    
+     {
+        src: './plasma.mp4',
+        position: { x: -1.5, y: 2.4, z: 6.48 },
+        rotation: 150,  // Rotated 90 degrees
+        scale: 0.8,
+        width: 8,
+        height: 12,
+        opacity: 1,
+        featherSize: 0.2,
+        blendMode: 'screen'
+    },
+    
+     {
+        src: './fog.mp4',
+        position: { x: 15, y: 2.4, z: 2.3 },
+        rotation: 50,  // Rotated 90 degrees
+        scale: 0.8,
+        width: 12,
+        height: 7,
+        opacity: 0.5,
+        featherSize: 0.2,
+        blendMode: 'screen'
+    },
+    
+     {
+        src: './fog2.mp4',
+        position: { x: -12, y: 0, z: 3.8 },
+        rotation: 150,  // Rotated 90 degrees
+        scale: 0.8,
+        width: 12,
+        height: 7,
+        opacity: 1,
+        featherSize: 0.2,
+        blendMode: 'screen'
+    },
+ 
+ 
+ 
+];
+
+const videoPlanes = setupVideos(videosList);
+      
+   
+
+      renderer = new THREE.WebGLRenderer();
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.xr.enabled = true;
+      renderer.xr.setReferenceSpaceType('local');
+      container.appendChild(renderer.domElement);
+
+      initControllers();
+
+      controls = new OrbitControls(camera, renderer.domElement);
+      controls.enablePan = false;
+      controls.enableZoom = false;
+      controls.enabled = !renderer.xr.isPresenting;
+
+      document.body.appendChild(VRButton.createButton(renderer));
+
+      // Initialize UI Controls
+      initUIControls();
+
+      // Add event listeners
+      window.addEventListener('resize', onWindowResize);
+      document.addEventListener('wheel', onDocumentMouseWheel, false);
+      window.addEventListener('mousedown', onDocumentMouseDown, false);
+      window.addEventListener('mousemove', onDocumentMouseMove, false);
+      window.addEventListener('mouseup', onDocumentMouseUp, false);
+      window.addEventListener('touchstart', onDocumentTouchStart, false);
+      window.addEventListener('touchmove', onDocumentTouchMove, false);
+      window.addEventListener('touchend', onDocumentTouchEnd, false);
+      window.addEventListener('touchcancel', onDocumentTouchEnd, false);
+      initGyroscope();
+    }
+
+ function initGyroscope() {
+    // Check if device orientation is supported
+    if (window.DeviceOrientationEvent) {
+        // For iOS 13+ devices - need to request permission
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            // Create a button for iOS permission
+            const button = document.createElement('button');
+            button.style.position = 'fixed';
+            button.style.bottom = '20px';
+            button.style.left = '50%';
+            button.style.transform = 'translateX(-50%)';
+            button.style.padding = '12px 24px';
+            button.style.backgroundColor = '#2196F3';
+            button.style.color = 'white';
+            button.style.border = 'none';
+            button.style.borderRadius = '8px';
+            button.style.zIndex = '9999';
+            button.textContent = 'Enable Gyroscope';
+            
+            button.addEventListener('click', async () => {
+                try {
+                    const permission = await DeviceOrientationEvent.requestPermission();
+                    if (permission === 'granted') {
+                        deviceOrientationPermission = true;
+                        enableGyroscope();
+                        button.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Error requesting gyroscope permission:', error);
+                }
+            });
+            
+            document.body.appendChild(button);
+        } else {
+            // For non-iOS devices - no permission needed
+            deviceOrientationPermission = true;
+            enableGyroscope();
+        }
+    }
+}
+
+function enableGyroscope() {
+    if (!deviceOrientationPermission) return;
+
+    const gyroToggle = document.getElementById('toggle-gyroscope');
+    const resetButton = document.createElement('button');
+    
+    // Style for reset button
+    resetButton.style.width = '100%';
+    resetButton.style.padding = '12px';
+    resetButton.style.background = 'linear-gradient(135deg, #009688, #00695C)';
+    resetButton.style.color = 'white';
+    resetButton.style.border = 'none';
+    resetButton.style.borderRadius = '12px';
+    resetButton.style.cursor = 'pointer';
+    resetButton.style.display = 'none';
+    resetButton.textContent = 'Reset Gyroscope View';
+
+    // Add reset button after gyro toggle
+    gyroToggle.parentNode.insertBefore(resetButton, gyroToggle.nextSibling);
+
+    gyroToggle.addEventListener('click', () => {
+        isGyroActive = !isGyroActive;
+        gyroToggle.textContent = isGyroActive ? 'Disable Gyroscope' : 'Enable Gyroscope';
+        resetButton.style.display = isGyroActive ? 'block' : 'none';
+        if (isGyroActive) {
+            resetGyroscope();
+            window.addEventListener('deviceorientation', handleDeviceOrientation);
+        } else {
+            window.removeEventListener('deviceorientation', handleDeviceOrientation);
+        }
+    });
+
+    resetButton.addEventListener('click', () => {
+        resetGyroscope();
+    });
+}
+
+function handleDeviceOrientation(event) {
+    if (!isGyroActive) return;
+
+    // Initialize reference angle if not set
+    if (initialAlpha === null) {
+        initialAlpha = event.alpha;
+        previousAlpha = event.alpha;
+        return;
+    }
+
+    // Get the raw alpha value (horizontal rotation)
+    let alpha = event.alpha;
+
+    // Handle wrap-around for alpha value
+    if (Math.abs(alpha - previousAlpha) > 180) {
+        if (alpha < previousAlpha) {
+            rotationOffset += 360;
+        } else {
+            rotationOffset -= 360;
+        }
+    }
+
+    // Calculate continuous angle
+    currentAlpha = alpha + rotationOffset;
+    previousAlpha = alpha;
+
+    // Convert angles to radians
+    const alphaRad = THREE.MathUtils.degToRad(-currentAlpha);
+    const betaRad = THREE.MathUtils.degToRad(event.beta - 90);
+    const gammaRad = THREE.MathUtils.degToRad(event.gamma);
+
+    // Smooth the values
+    const smoothingFactor = 0.1;
+    lastGyroAlpha = lastGyroAlpha * (1 - smoothingFactor) + alphaRad * smoothingFactor;
+    lastGyroBeta = lastGyroBeta * (1 - smoothingFactor) + betaRad * smoothingFactor;
+    lastGyroGamma = lastGyroGamma * (1 - smoothingFactor) + gammaRad * smoothingFactor;
+
+    if (!renderer.xr.isPresenting) {
+        // Calculate the camera direction
+        const phi = Math.PI/2 - lastGyroBeta;
+        const theta = lastGyroAlpha;
+
+        // Convert spherical coordinates to Cartesian
+        const x = Math.sin(phi) * Math.cos(theta);
+        const y = Math.cos(phi);
+        const z = Math.sin(phi) * Math.sin(theta);
+
+        // Update camera look direction
+        camera.lookAt(
+            camera.position.x + x,
+            camera.position.y + y,
+            camera.position.z + z
+        );
+
+        // Disable other controls while gyro is active
+        controls.enabled = false;
+        isUserInteracting = false;
+    }
+}
+
+function resetGyroscope() {
+    initialAlpha = null;
+    currentAlpha = 0;
+    previousAlpha = 0;
+    rotationOffset = 0;
+    lastGyroAlpha = 0;
+    lastGyroBeta = 0;
+    lastGyroGamma = 0;
+}
+
+function initControllers() {
+    controller1 = renderer.xr.getController(0);
+    controller2 = renderer.xr.getController(1);
+    
+    controller1.addEventListener('selectstart', onTriggerStart);
+    controller1.addEventListener('selectend', onTriggerEnd);
+    controller2.addEventListener('selectstart', onTriggerStart);
+    controller2.addEventListener('selectend', onTriggerEnd);
+    
+    controller1.userData.handedness = 'right';
+    controller2.userData.handedness = 'left';
+    
+    scene.add(controller1);
+    scene.add(controller2);
+
+    // Controller Grips
+    const controllerModelFactory = new XRControllerModelFactory();
+    
+    const controllerGrip1 = renderer.xr.getControllerGrip(0);
+    const model1 = controllerModelFactory.createControllerModel(controllerGrip1);
+    controllerGrip1.add(model1);
+    scene.add(controllerGrip1);
+
+    const controllerGrip2 = renderer.xr.getControllerGrip(1);
+    const model2 = controllerModelFactory.createControllerModel(controllerGrip2);
+    controllerGrip2.add(model2);
+    scene.add(controllerGrip2);
+
+    // Add visual rays
+    const geometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(0, 0, -1)
+    ]);
+
+    const line1 = new THREE.Line(geometry);
+    const line2 = new THREE.Line(geometry);
+    line1.scale.z = 5;
+    line2.scale.z = 5;
+    controller1.add(line1);
+    controller2.add(line2);
+}
+
+
+
+
+function onSqueezeStart(event) {
+    const controller = event.target;
+    if (selectedObject && controller === selectedController) {
+        isRotating = true;
+        lastControllerPosition.copy(controller.position);
+    }
+}
+
+function onSqueezeEnd(event) {
+    const controller = event.target;
+    if (controller === selectedController) {
+        isRotating = false;
+    }
+}
+
+function onTriggerStart(event) {
+    const controller = event.target;
+    
+    if (!selectedObject) {
+        // If no object is selected, try to grab one
+        const intersections = getIntersections(controller);
+        if (intersections.length > 0) {
+            const intersection = intersections[0];
+            let object = intersection.object;
+
+            // Find the parent object that is in the objects array
+            while (object.parent && !objects.includes(object) && !objectsGroup.children.includes(object)) {
+                object = object.parent;
+            }
+
+            if (objects.includes(object) || objectsGroup.children.includes(object)) {
+                selectedObject = object;
+                selectedController = controller;
+
+                // Store initial positions
+                controller.userData.initialPosition = controller.position.clone();
+                selectedObject.userData.initialPosition = selectedObject.position.clone();
+            }
+        }
+    } else {
+        // If we already have a selected object, check if both triggers are now pressed
+        if (controller !== selectedController) {
+            bothTriggersPressed = true;
+            // Store initial horizontal distance between controllers
+            rotationStartX = controller1.position.x - controller2.position.x;
+        }
+    }
+}
+
+function onTriggerEnd(event) {
+    const controller = event.target;
+    if (controller === selectedController) {
+        // Primary controller released, save position and rotation
+        if (selectedObject) {
+            selectedObject.userData.lastVRRotation = selectedObject.quaternion.clone();
+            
+            // Save position for any video plane
+            const positionData = {
+                x: selectedObject.position.x,
+                y: selectedObject.position.y,
+                z: selectedObject.position.z,
+                rotationY: selectedObject.rotation.y
+            };
+            
+            // Use the video's unique ID for storage
+            if (selectedObject.userData.videoId) {
+                localStorage.setItem(selectedObject.userData.videoId + '_position', JSON.stringify(positionData));
+                console.log('Saved position for video:', selectedObject.userData.videoId);
+            }
+        }
+
+        selectedObject = null;
+        selectedController = null;
+        bothTriggersPressed = false;
+
+        // Clear stored positions
+        if (controller.userData) {
+            controller.userData.initialPosition = null;
+        }
+    } else {
+        // Secondary controller released, stop rotation
+        bothTriggersPressed = false;
+    }
+}
+
+
+function getIntersections(controller) {
+    const tempMatrix = new THREE.Matrix4();
+    tempMatrix.identity().extractRotation(controller.matrixWorld);
+
+    const raycaster = new THREE.Raycaster();
+    raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
+    raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+
+    // Get all objects to test, including their children
+    const testObjects = [];
+    objects.concat(objectsGroup.children).forEach(object => {
+        if (object.type === 'Group') {
+            object.traverse(child => {
+                if (child.isMesh) {
+                    testObjects.push(child);
+                }
+            });
+        } else {
+            testObjects.push(object);
+        }
+    });
+
+    return raycaster.intersectObjects(testObjects, true);
+}
+
+
+
+function updateVRInteractions() {
+    if (!selectedObject || !selectedController) return;
+
+    if (!bothTriggersPressed) {
+        // Get initial positions
+        const initialControllerPosition = selectedController.userData.initialPosition;
+        const initialObjectPosition = selectedObject.userData.initialPosition;
+
+        // Current controller position
+        const currentControllerPosition = selectedController.position.clone();
+
+        // Compute total movement since grabbing started
+        const movement = currentControllerPosition.sub(initialControllerPosition);
+
+        // Apply multiplier to increase movement speed
+        const movementMultiplier = 12; // Increased from 2 to 12 for more responsive movement
+        movement.multiplyScalar(movementMultiplier);
+
+        // Update object's position
+        selectedObject.position.copy(initialObjectPosition.clone().add(movement));
+
+    } else {
+        // Handle horizontal rotation with both triggers
+        const currentDistanceX = controller1.position.x - controller2.position.x;
+        
+        // Calculate rotation angle based on horizontal controller movement only
+        const rotationAngle = (currentDistanceX - rotationStartX) * 4; // Adjust multiplier for sensitivity
+        
+        // Apply Y-axis rotation only
+        selectedObject.rotateY(rotationAngle);
+        
+        // Update rotation reference
+        rotationStartX = currentDistanceX;
+    }
+}
+
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function onDocumentMouseWheel(event) {
+      event.preventDefault();
+      camera.fov += event.deltaY * 0.05;
+      camera.fov = Math.max(40, Math.min(100, camera.fov));
+      camera.updateProjectionMatrix();
+    }
+
+    function animate() {
+      renderer.setAnimationLoop((timestamp, frame) => {
+        if (frame) {
+          const inputSources = frame.session.inputSources;
+          for (const inputSource of inputSources) {
+            if (inputSource.gamepad) {
+              // Handle controller input
+            }
+          }
+        }
+        
+        render();
+      });
+    }
+
+  // Find the existing render function and replace it with this:
+
+// Find and replace the existing render function with this version
+
+function render() {
+    if (!renderer.xr.isPresenting && !isGyroActive) {
+        updateSphereRotation();
+        objectsGroup.children.forEach(object => {
+            if (!object.userData.isVR) {
+                if (!object.userData.lastVRRotation) {
+                    object.rotation.y = object.userData.initialRotation || 0;
+                }
+            }
+            object.updateMatrix();
+        });
+        
+        // Remove this lookAt completely or only do it on initial load
+        // if (videoPlane && !localStorage.getItem('videoPlanePosition')) {
+        //     videoPlane.lookAt(camera.position);
+        // }
+    } else {
+        // VR mode
+         if (backgroundAudio) {
+            // Optional: Adjust audio based on VR state
+            backgroundAudio.volume = 0.3; // Lower volume in VR
+        }
+        updateVRInteractions();
+        objectsGroup.children.forEach(object => {
+            object.userData.isVR = true;
+            if (!selectedObject || selectedObject !== object) {
+                object.userData.lastVRRotation = object.quaternion.clone();
+            }
+        });
+    }
+    
+    renderer.render(scene, camera);
+}
+</script>
+</body>
+</html
+
+
+
+
+
+
