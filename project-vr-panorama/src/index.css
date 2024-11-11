@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  background-color: #000000;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+canvas {
+  touch-action: none;
+}
+
+/* VR Button Styling */
+#VRButton {
+  position: fixed !important;
+  bottom: 24px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  padding: 12px 24px !important;
+  border: 2px solid #ffffff !important;
+  border-radius: 8px !important;
+  background: rgba(0, 0, 0, 0.75) !important;
+  color: #ffffff !important;
+  font: bold 13px sans-serif !important;
+  text-align: center !important;
+  text-transform: uppercase !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer !important;
+  letter-spacing: 1px !important;
+}
+
+#VRButton:hover {
+  background: rgba(0, 0, 0, 0.9) !important;
+  transform: translateX(-50%) scale(1.05) !important;
+}
+
+#VRButton:active {
+  transform: translateX(-50%) scale(0.95) !important;
+}
+
+/* Loading screen animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* Progress bar styling */
+.progress-bar {
+  transition: width 0.3s ease-out;
+}
+
+/* Loading screen fade */
+.loading-screen {
+  transition: opacity 0.5s ease-out;
+}
