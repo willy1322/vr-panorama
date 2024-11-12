@@ -1,0 +1,33 @@
+{
+  "name": "webxr-multiplayer",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@react-three/drei": "^9.99.0",
+    "@react-three/fiber": "^8.15.16",
+    "@react-three/xr": "^5.7.1",
+    "lucide-react": "^0.344.0",
+    "peerjs": "^1.5.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "three": "^0.161.0",
+    "zustand": "^4.5.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@types/three": "^0.161.2",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.18",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.5.3",
+    "vite": "^5.4.2"
+  }
+}

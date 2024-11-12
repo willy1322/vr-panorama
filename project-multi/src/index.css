@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+#VRButton {
+  background: rgba(0, 0, 0, 0.8) !important;
+  border: 2px solid #818cf8 !important;
+  color: white !important;
+  font-family: system-ui, -apple-system, sans-serif !important;
+  padding: 12px 24px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  position: fixed !important;
+  bottom: 24px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 50 !important;
+}
+
+#VRButton:hover {
+  background: rgba(0, 0, 0, 0.9) !important;
+  transform: translateX(-50%) translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+}
