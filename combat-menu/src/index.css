@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* VR Button Styles */
+[data-xr-entry] {
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  background: #ff3e3e !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 16px 32px !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+  z-index: 999999 !important;
+}
